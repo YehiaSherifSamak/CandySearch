@@ -30,7 +30,7 @@ class MasterViewController: UIViewController {
         settingUpSearchbar();
         tableView.delegate = self;
         tableView.dataSource = self;
-        
+        searchController.searchBar.delegate = self;
     }
     func setDummyCanddiesValues(){
            candies = [
@@ -84,19 +84,30 @@ extension MasterViewController: UISearchResultsUpdating{
         searchController.searchBar.placeholder = "Search Candies";
         navigationItem.searchController = searchController;
         definesPresentationContext = true;
+        searchController.searchBar.scopeButtonTitles = ["All", "Chocolate", "Hard", "Other"];
     }
     
     func updateSearchResults(for searchController: UISearchController) {
         let searchBar = searchController.searchBar
-        filterContentForSearchText(searchText: searchBar.text!)
+        let category = searchBar.scopeButtonTitles![searchBar.selectedScopeButtonIndex];
+        filterContentForSearchText(searchText: searchBar.text!, category: category)
     }
-    func filterContentForSearchText(searchText : String){
+    func filterContentForSearchText(searchText : String, category : String = "All"){
         
         filteredCandies = candies.filter({ (candy) -> Bool in
-            return candy.name.lowercased().contains(searchText.lowercased());
+            let doesCatogeryMatch =  category.lowercased() == "all" || candy.category == category
+            print( candy.name + "  " + String(doesCatogeryMatch))
+            return doesCatogeryMatch && candy.name.lowercased().contains(searchText.lowercased());
         })
       tableView.reloadData()
     }
     
 }
 
+extension MasterViewController: UISearchBarDelegate{
+    func searchBar(_ searchBar: UISearchBar, selectedScopeButtonIndexDidChange selectedScope: Int) {
+        let category = searchBar.scopeButtonTitles![searchBar.selectedScopeButtonIndex];
+        
+        filterContentForSearchText(searchText: searchBar.text!, category: category);
+    }
+}
